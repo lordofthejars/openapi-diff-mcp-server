@@ -30,7 +30,6 @@ public class OpenApiDiffMcpServer {
     @Inject
     Logger logger;
 
-
     @Tool(description = "find differences between two OpenAPI specifications and reports on differences.")
     @WrapBusinessError
     public ToolResponse verifyCompatibility(
@@ -39,10 +38,16 @@ public class OpenApiDiffMcpServer {
             @ToolArg(description = "The format of the explanation of diff output", defaultValue = "md") String format
     ) throws IOException {
 
+        logger.info("Verify compatibility of specs");
+
         String oldContent = isUri(oldSpec) ? downloadToString(oldSpec) : oldSpec;
         String newContent = isUri(newSpec) ? downloadToString(newSpec) : newSpec;
 
+        logger.infof("Comparing old spec %s with new spec %s", oldContent, newContent);
+
         final ChangedOpenApi diff = OpenApiCompare.fromContents(oldContent, newContent);
+
+        logger.infof("Spec changed: %s Spec Incompatible: %s", diff.isDifferent(), diff.isIncompatible());
 
         String explanation = switch (format) {
             case "md" -> writeToString(new MarkdownRender(), diff);
